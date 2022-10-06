@@ -1,6 +1,5 @@
 // Include the ros library
 #include <ros/ros.h> 
-
 #include <onboarding/PointDist.h>
 #include <sensor_msgs/LaserScan.h>
 // (todo) Include the LaserScan message header from the sensor_msgs library
@@ -35,13 +34,46 @@ public:
 
     void scan_cb(const sensor_msgs::LaserScan &msg)
     {
-        minPoint.distance = msg->range_min;
-        minPOint.angle = msg->angle_min;
+        float minRange = msg->ranges[0];
+        float maxRange = msg->ranges[0];
+        float minAngle, maxAngle;
+        int minCount = -1;
+        int maxCount = -1;
+        for(int i = 1; i < msg->ranges.size(); i++)
+        {
+            if(msg->ranges[i] < minRange)
+            {
+                minRange = msg->ranges[i];
+            }
+            if(msg->range[i] > maxRange)
+            {
+                maxRange = msg->ranges[i];
+            }
+        }
+        for(int i = 1; i < msg->ranges.size(); i++)
+        {
+            if(minCount && maxCount != -1)
+            {
+                break;
+            }
+            if(msg->ranges[i] == minRange)
+            {
+                minCount = i;
+            }
+            if(msg->ranges[i] == maxRange)
+            {
+                maxCount = i;
+            }
+        }
+        minAngle = minRange + minCount*msg->angle_increment;
+        maxAngle = maxRange + maxCount*msg->angle_increment
+        minPoint.distance = minRange;
+        minPOint.angle = minAngle;
         // (todo) Find the min value and it's angle
         // Save it to the pre-declared minPoint variable.
 
-        maxPoint.distance = msg->range_max;
-        maxPoint.distance = msg->angle_max;
+        maxPoint.distance = maxRange;
+        maxPoint.angle = maxAngle;
         // (todo) Find the max value and it's angle
         // Save it to the pre-declared maxPoint variable.
         minPub.publish(minPoint);
